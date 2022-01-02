@@ -28,9 +28,11 @@ for(const name of Object.keys(nets)){
 var wss = new WebSocket.Server({ port: 81 })
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
+        console.log('received: %s', message)
         if(message.toString() == 'request'){
             win.webContents.send('channel', ['request'])
         }
+        message = message.toString().split('&&')
         if(message[0]){
             switch(message[0]){
                 case 'keypress':
@@ -63,6 +65,8 @@ wss.on('connection', function connection(ws) {
                     robot.scrollMouse(message[1])
                 break
             }
+        }else{
+            console.log(message)
         }
     })
 })
@@ -95,27 +99,27 @@ app.on('ready', function(){
 
 hook.on('keypress', function(e){
     if(c2 != null){
-        c2.send(['keypress', String.fromCharCode(e.keychar), e.shiftKey, e.altKey, e.ctrlKey, e.metaKey])
+        c2.send(`keypress&&${String.fromCharCode(e.keychar)}&&${e.shiftKey, e.altKey, e.ctrlKey, e.metaKey}`)
     }
 })
 hook.on('mousemove', function(e){
-    if(c2 != null){
-        c2.send(['mousemove', (e.x * 100) / robot.getScreenSize().width, (e.x * 100) / robot.getScreenSize().height])
+    if(c2){
+        c2.send(`mousemove&&${(e.x * 100) / robot.getScreenSize().width}&&${(e.x * 100) / robot.getScreenSize().height}`)
     }
 })
 hook.on('mouseclick', function(e){
     if(c2 != null){
-        c2.send(['mouseclick', e.button])
+        c2.send(`mouseclick&&${e.button}`)
     }
 })
 hook.on('mousewheel', function(e){
     if(c2 != null){
-        c2.send(['mousewheel', e.rotation])
+        c2.send(`mousewheel&&${e.rotation}`)
     }
 })
 hook.on('mousedrag', function(e){
     if(c2 != null){
-        c2.send(['mousemove', (e.x * 100) / robot.getScreenSize().width, (e.x * 100) / robot.getScreenSize().height])
+        c2.send(`mousemove&&${(e.x * 100) / robot.getScreenSize().width}&&${(e.x * 100) / robot.getScreenSize().height}`)
     }
 })
 hook.start()
