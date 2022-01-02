@@ -7,9 +7,11 @@ robot.setKeyboardDelay(0)
 const { networkInterfaces } = require(`os`)
 const nets = networkInterfaces()
 const results = Object.create(null)
+var win
 var ipv4
 var prefix
 var c2
+var weso
 for(const name of Object.keys(nets)){
 	for(const net of nets[name]){
 		if(net.family === `IPv4` && !net.internal){
@@ -26,11 +28,46 @@ for(const name of Object.keys(nets)){
 var wss = new WebSocket.Server({ port: 81 })
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
-        console.log('received: %s', message)
+        if(message.toString() == 'request'){
+            win.webContents.send('channel', ['request'])
+        }
+        if(message[0]){
+            switch(message[0]){
+                case 'keypress':
+                    modifiers = []
+                    if(message[2] === true){
+                        modifiers.push('shift')
+                    }
+                    if(message[3] === true){
+                        modifiers.push('alt')
+                    }
+                    if(message[3] === true){
+                        modifiers.push('ctrl')
+                    }
+                    if(message[3] === true){
+                        modifiers.push('command')
+                    }
+                    robot.keyTap(message[1], modifiers)
+                break
+                case 'mousemove':
+                    robot.moveMouse(robot.getScreenSize().width / (100 / message[1]), robot.getScreenSize().height / (100 / message[2]))
+                break
+                case 'mouseclick':
+                    if(message[1] === 1){
+                        robot.mouseClick('left')
+                    }else{
+                        robot.mouseClick('right')
+                    }
+                break
+                case 'mousewheel':
+                    robot.scrollMouse(message[1])
+                break
+            }
+        }
     })
 })
 app.on('ready', function(){
-    var win = new BrowserWindow({
+    win = new BrowserWindow({
         alwaysOnTop: true,
         webPreferences: {
             nodeIntegration: true,
@@ -44,13 +81,41 @@ app.on('ready', function(){
     ipcMain.on('channel', (err, msg)=>{
         switch(msg[0]){
             case 'request':
-                new WebSocket(`ws://${prefix}.${msg[1]}:81`).send(['request'])
+                weso = new WebSocket(`ws://${prefix}.${msg[1]}:81`)
+                weso.onopen = function(){
+                    weso.send('request')
+                }
+            break
+            case 'accept':
+                c2 = weso
             break
         }
     })
 })
 
-hook.on('keydown', function(e){
-    console.log(e)
+hook.on('keypress', function(e){
+    if(c2 != null){
+        c2.send(['keypress', String.fromCharCode(e.keychar), e.shiftKey, e.altKey, e.ctrlKey, e.metaKey])
+    }
+})
+hook.on('mousemove', function(e){
+    if(c2 != null){
+        c2.send(['mousemove', (e.x * 100) / robot.getScreenSize().width, (e.x * 100) / robot.getScreenSize().height])
+    }
+})
+hook.on('mouseclick', function(e){
+    if(c2 != null){
+        c2.send(['mouseclick', e.button])
+    }
+})
+hook.on('mousewheel', function(e){
+    if(c2 != null){
+        c2.send(['mousewheel', e.rotation])
+    }
+})
+hook.on('mousedrag', function(e){
+    if(c2 != null){
+        c2.send(['mousemove', (e.x * 100) / robot.getScreenSize().width, (e.x * 100) / robot.getScreenSize().height])
+    }
 })
 hook.start()

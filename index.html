@@ -15,8 +15,8 @@
     </div>
     <div id="connectionbox" class="center">
         <p>Someone on your internet is requesting to connect.</p>
-        <button>Accept</button>
-        <button>Decline</button>
+        <button id="accept">Accept</button>
+        <button id="decline">Decline</button>
     </div>
     <style>
         #code {
@@ -48,6 +48,7 @@
             border: 1px solid black;
             width: 30vw;
             margin-top: 20px;
+            visibility: hidden;
         }
     </style>
     <script>
@@ -56,8 +57,17 @@
                 case 'dc':
                     document.getElementById('code').innerHTML = "Your display code is: "+arg[1]
                 break
+                case 'request':
+                    document.getElementById('connectionbox').style.visibility = 'visible'
+                break
             }
-            
+        })
+        document.getElementById('accept').addEventListener('click', function(){
+            require('electron').ipcRenderer.send('channel', ['accept'])
+            document.getElementById('connectionbox').style.visibility = 'hidden'
+        })
+        document.getElementById('decline').addEventListener('click', function(){
+            document.getElementById('connectionbox').style.visibility = 'hidden'
         })
         document.getElementById('connect').addEventListener('click', function(){
             require('electron').ipcRenderer.send('channel', ['request', document.getElementById('connection').value])
