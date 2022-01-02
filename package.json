@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "electron": "^12.0.0",
+    "electron-rebuild": "^3.2.5",
+    "iohook": "^0.9.3",
+    "robotjs": "^0.6.0",
+    "ws": "^8.4.0"
+  },
+  "name": "tuko2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "rebuild": "electron-rebuild ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "iohook": {
+    "targets": [
+      "node-72",
+      "electron-87"
+    ],
+    "platforms": [
+      "darwin"
+    ],
+    "arches": [
+      "x64"
+    ]
+  }
+}

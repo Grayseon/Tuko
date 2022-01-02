@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tuko</title>
+</head>
+<body>
+    <p style="font-size: 3rem; text-align: center;">Tuko</p>
+    <p id="code"></p>
+    <div class="center">
+        <input type="text" id="connection" placeholder="2nd display code"><br><br>
+        <button id="connect">Connect</button>
+    </div>
+    <div id="connectionbox" class="center">
+        <p>Someone on your internet is requesting to connect.</p>
+        <button>Accept</button>
+        <button>Decline</button>
+    </div>
+    <style>
+        #code {
+            text-align: center;
+            font-size: 2rem;
+        }
+        #connection {
+            width: 40vw;
+            height: 5vh;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .center {
+            text-align: center;
+            margin: auto;
+        }
+        #connect {
+            background-color: white;
+            width: 20vw;
+            height: 5vh;
+            transition: width 0.5s, background-color 0.5s, color 0.5s;
+        }
+        #connect:hover {
+            width: 50vw;
+            background-color: black;
+            color: white;
+        }
+        #connectionbox {
+            border: 1px solid black;
+            width: 30vw;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        require('electron').ipcRenderer.on('channel', function(err, arg) {
+            switch(arg[0]){
+                case 'dc':
+                    document.getElementById('code').innerHTML = "Your display code is: "+arg[1]
+                break
+            }
+            
+        })
+        document.getElementById('connect').addEventListener('click', function(){
+            require('electron').ipcRenderer.send('channel', ['request', document.getElementById('connection').value])
+        })
+    </script>
+</body>
+</html>
